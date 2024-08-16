@@ -127,7 +127,7 @@ window.addEventListener("DOMContentLoaded", () => {
   modalCloseBtn.addEventListener("click", closeModal);
 
   modal.addEventListener("click", (e) => {
-    if (e.target == modal) {
+    if (e.target == modal || e.getAttribute("data-close") == "") {
       closeModal();
     }
   });
@@ -195,6 +195,10 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  async function getRecource(url) {
+    const res = await fatch(url);
+  }
+
   new MenuCard(
     "img/tabs/1.png",
     "usual",
@@ -223,4 +227,134 @@ window.addEventListener("DOMContentLoaded", () => {
     ".menu .container",
     "menu__item"
   ).render();
+
+  // Form
+  const forms = document.querySelectorAll("form");
+
+  forms.forEach((form) => {
+    postData(form);
+  });
+
+  async function postData(url, data) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "content-Type": "application/jons",
+      },
+      body: data,
+    });
+    return res.json();
+  }
+
+  const msg = {
+    loading: "img/spinner.svg",
+    success: "Thank's for submitting our form",
+    failura: "Something went wrong",
+  };
+
+  function bindPostData(form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const statusMessage = document.createElement("img");
+      statusMessage.src = msg.loading;
+      statusMessage.style.cssText = `
+      display: block;
+      margin: 0 auto;`;
+
+      form.insertAajacentElemt("afterend", statusMessage);
+      const request = new XMLHttpRequest();
+      request.open("POST", "server php");
+      request.setRequestHeader("Content-Type", "application/json");
+
+      const obj = {};
+
+      const json = JSON.stringify(obj);
+      request.send(json);
+
+      request,
+        addEventListener("load", () => {
+          if ((request.status = 200)) {
+            console.log(request.response);
+            showThanksModal(msg.success);
+            form.resrt();
+            setTimeout(() => {
+              statusMessage.remove();
+            }, 2000);
+          } else {
+            statusMessage.textContent(msg.failura);
+          }
+        });
+    });
+  }
+
+  function showThanksModal() {
+    const prevModalDialog = document.querySelector(".modal__dialog");
+
+    prevModalDialog.classList.add("hide");
+    openModal();
+
+    const ThanksModal = document.createElement("div");
+    ThanksModal.classList.add("modal__dialog");
+    ThanksModal.innerHTML = `
+      <div class="modal__content">
+      <div data-close class="modal__close">&times;</div>
+       <div class="modal__title">${message}</div>
+      </div>
+    `;
+
+    document.querySelector(".molal").append(ThanksModal);
+    setTimeout(() => {
+      ThanksModal.remove();
+      prevModalDialog.classList.add("show");
+      prevModalDialog.classList.remove("hide");
+      closeModal();
+    }, 4000);
+  }
+
+  const slides = document.querySelectorAll(".offer__slide"),
+    next = document.querySelector(".offer__slider-next"),
+    prev = document.querySelector(".offer__slider-prev");
+  total = document.querySelector("#total");
+  current = document.querySelector("#current");
+
+  let slideIndex = 1;
+
+  showSlides(slideIndex);
+
+  if (slides.length < 10) {
+    total.textContent = `0${slides.length}`;
+  } else {
+    total.textContent = slides.length;
+  }
+
+  function showSlides(idx) {
+    if (idx > slides.length) {
+      slideIndex = 1;
+    }
+    if (idx < 1) {
+      slideIndex = slides.length;
+    }
+    slides.forEach((item) => (item.style.display = "none"));
+    slides[slideIndex - 1].style.display = "block";
+
+    if (slides.length < 10) {
+      current.textContent = `0${slideIndex}`;
+    } else {
+      current.textContent = slideIndex;
+    }
+  }
+
+  function plusSlides(idx) {
+    showSlides((slideIndex += idx));
+  }
+
+  next.addEventListener("click", () => {
+    plusSlides(1);
+  });
+
+  prev.addEventListener("click", () => {
+    plusSlides(-1);
+  });
 });
+
